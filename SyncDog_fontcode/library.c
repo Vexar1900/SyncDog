@@ -50,7 +50,7 @@ int defineDir() {
 			}else{
 				perror("ERR failed to create new directory\n");
 				sleep(1);
-				return 1;
+				return 0;
 			}
 		}
 
@@ -63,14 +63,14 @@ int defineDir() {
 		}else{
 			perror("ERR failed to create new directory\n");
 			sleep(1);
-			return 1;
+			return 0;
 		}
 	}
 	file = fopen("SyncDogData/savedDir.txt", "w");
 	if(file == NULL) {
 		perror("ERR failed to open savedDir.txt\n");
 		sleep(2);
-		return 1;
+		return 0;
 	}
 	fprintf(file, "%s", dirLocation);
 	printf("success\n");
@@ -103,6 +103,7 @@ int openDir(musicLibrary *library) {
 	printf("finding only mp3...\n\n");
 	sleep(1);
 	mp3 *tempAlbum;
+	library->count = 0;
 	int ignore = 0;
 	struct dirent *data;
 	char filepath[512];
@@ -120,19 +121,6 @@ int openDir(musicLibrary *library) {
 						if(!S_ISREG(chart.st_mode)) {
 							ignore++;
 						}else{
-							if(library->count == library->capacity) {
-								library->capacity *= 2;
-								tempAlbum = realloc(library->stored, library->capacity * sizeof(mp3));
-								if(tempAlbum == NULL) {
-									perror("ERR out of memory\n");
-									sleep(1);
-									closedir(dir);
-									fclose(file);
-									return 0;
-								}else{
-								library->stored = tempAlbum
-								}
-							}
 							printf("%s\n", data->d_name);
 							strcpy(library->stored[library->count].name, data->d_name);
 							strcpy(library->stored[library->count].path, filepath);
@@ -159,6 +147,13 @@ int openDir(musicLibrary *library) {
 }
 int main() {
 	musicLibrary library = {0};
+	library.capacity = 100;
+	mp3 *temp = malloc(sizeof(mp3) * library.capacity);
+	if(temp == NULL) {
+		perror("ERR malloc failed");
+		return 1;
+	}
+	library.stored = temp;
 	char op = '0';
 	int check = 1;
 	do {
